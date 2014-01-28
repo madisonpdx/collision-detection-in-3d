@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="viewport" content = "width = device-width, initial-scale = 1, user-scalable = no" />
+    <title>Blender 3D and Three.js</title>
+    <!--[if IE]>
+        <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link rel="stylesheet" type="text/css" href="css/style.css"> 
+</head>
+
+<body id="home">
+
+    <div id="container"></div>
+
+    <script type="text/javascript" src="js/three.js"></script>
+    <script type="text/javascript">
+        var camera, scene, manager, renderer;
+        var avatar, marker;
+        var isCartWheeling = false;
+        var isFlipping = false;
+        var not_allowed = [];
+
+        init();
+
+        function init() {
+            // create a new scene that we will add objects to.
+            scene = new THREE.Scene();          
+
+            // create a camera and add it to the scene.
+            var width = window.innerWidth;
+            var height = window.innerHeight;
+            camera = new THREE.PerspectiveCamera(45, width / height, 1, 10000);
+            camera.position.z = 1000;
+            camera.position.y = 200;
+            scene.add(camera);
+
+            makeAvatar();
+
+            makeTreeAt(200, 0);
+            makeTreeAt(-200, 0);
+            makeTreeAt(600, -500);
+            makeTreeAt(-100, -500);
+
+            // create a renderer to draw the scene on the screen. 
+            renderer = new THREE.WebGLRenderer();
+            renderer.setClearColor(0x000000);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            document.addEventListener('keydown', function(event) {
+                var code = event.keyCode;
+                var isMovingLeft = false;
+                var isMovingUp = false;
+                var isMovingRight = false;
+                var isMovingDown = false;
+
+                if (code == 37) {
+                    marker.position.x = marker.position.x - 5; // left
+                    isMovingLeft = true;
+                }
+
+                if (code == 38) {
+                    marker.position.z = marker.position.z - 5; // up
+                    isMovingUp = true;
+                }
+
+                if (code == 39) {
+                    marker.position.x = marker.position.x + 5; // right
+                    isMovingRight = true;
+                }
+
+                if (code == 40) {
+                    marker.position.z = marker.position.z + 5; // down
+                    isMovingDown = true;
+                }
+
+                if (detectCollision()) {
+                    if (isMovingLeft)
+                        marker.position.x = marker.position.x + 5;
+
+                    if (isMovingUp)
+                        marker.position.z = marker.position.z + 5;
+
+                    if (isMovingRight)
+                        marker.position.x = marker.position.x - 5;
+
+                    if (isMovingDown)
+                        marker.position.z = marker.position.z - 5;
+                }
+            });
+
+            // call our animate function to start moving the object.
+            animate();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            renderer.render(scene, camera);
+        }
+
+        function detectCollision() {
+            var vector = new THREE.Vector3(0, -1, 0);
+            var ray = new THREE.Raycaster(marker.position, vector);
+            var intersects = ray.intersectObjects(not_allowed);
+
+            if (intersects.length > 0)
+                return true;
+
+            return false;
+        }
+
+        function makeAvatar() {
+            marker = new THREE.Object3D();
+            scene.add(marker);
+
+            var cover = new THREE.MeshNormalMaterial();
+            var body = new THREE.SphereGeometry(25);
+            avatar = new THREE.Mesh(body, cover);
+            marker.add(avatar)
+
+            var hand = new THREE.SphereGeometry(10);
+
+            var right_hand = new THREE.Mesh(hand, cover);
+            right_hand.position.set(-35, 0, 0);
+            avatar.add(right_hand);
+
+            var left_hand = new THREE.Mesh(hand, cover);
+            left_hand.position.set(35, 0, 0);
+            avatar.add(left_hand);
+
+            var foot = new THREE.SphereGeometry(10);
+
+            var right_foot = new THREE.Mesh(foot, cover);
+            right_foot.position.set(-10, -30, 0);
+            avatar.add(right_foot);
+
+            var left_foot = new THREE.Mesh(foot, cover);
+            left_foot.position.set(10, -30, 0);
+            avatar.add(left_foot);
+        }
+
+        function makeTreeAt(x, z) {
+            var base = new THREE.Mesh(
+                new THREE.CylinderGeometry(50, 50, 200),
+                new THREE.MeshBasicMaterial({color: 0xA0522D})
+            );
+
+            var leaves = new THREE.Mesh(
+                new THREE.SphereGeometry(150),
+                new THREE.MeshBasicMaterial({color: 0x228B22})
+            );
+            leaves.position.y = 175;
+
+            var boundary = new THREE.Mesh(
+                new THREE.CircleGeometry(100),
+                new THREE.MeshNormalMaterial()
+            );
+            boundary.position.y = -100;
+            boundary.rotation.x = -Math.PI/2;
+            base.add(boundary);
+            not_allowed.push(boundary);
+
+            base.add(leaves);
+            base.position.set(x, 60, z);
+
+            scene.add(base);
+        }
+    </script>
+</body>
+</html>
