@@ -18,10 +18,8 @@
 
     <script type="text/javascript" src="js/three.js"></script>
     <script type="text/javascript">
-        var camera, scene, manager, renderer;
+        var camera, scene, renderer;
         var avatar, marker;
-        var isCartWheeling = false;
-        var isFlipping = false;
         var not_allowed = [];
 
         init();
@@ -39,11 +37,6 @@
             scene.add(camera);
 
             makeAvatar();
-
-            makeTreeAt(200, 0);
-            makeTreeAt(-200, 0);
-            makeTreeAt(600, -500);
-            makeTreeAt(-100, -500);
 
             // create a renderer to draw the scene on the screen. 
             renderer = new THREE.WebGLRenderer();
@@ -77,23 +70,8 @@
                     marker.position.z = marker.position.z + 5; // down
                     isMovingDown = true;
                 }
-
-                if (detectCollision()) {
-                    if (isMovingLeft)
-                        marker.position.x = marker.position.x + 5;
-
-                    if (isMovingUp)
-                        marker.position.z = marker.position.z + 5;
-
-                    if (isMovingRight)
-                        marker.position.x = marker.position.x - 5;
-
-                    if (isMovingDown)
-                        marker.position.z = marker.position.z - 5;
-                }
             });
 
-            // call our animate function to start moving the object.
             animate();
         }
 
@@ -101,17 +79,6 @@
             requestAnimationFrame(animate);
 
             renderer.render(scene, camera);
-        }
-
-        function detectCollision() {
-            var vector = new THREE.Vector3(0, -1, 0);
-            var ray = new THREE.Raycaster(marker.position, vector);
-            var intersects = ray.intersectObjects(not_allowed);
-
-            if (intersects.length > 0)
-                return true;
-
-            return false;
         }
 
         function makeAvatar() {
@@ -144,32 +111,8 @@
             avatar.add(left_foot);
         }
 
-        function makeTreeAt(x, z) {
-            var base = new THREE.Mesh(
-                new THREE.CylinderGeometry(50, 50, 200),
-                new THREE.MeshBasicMaterial({color: 0xA0522D})
-            );
+        // you can add new functions here
 
-            var leaves = new THREE.Mesh(
-                new THREE.SphereGeometry(150),
-                new THREE.MeshBasicMaterial({color: 0x228B22})
-            );
-            leaves.position.y = 175;
-
-            var boundary = new THREE.Mesh(
-                new THREE.CircleGeometry(100),
-                new THREE.MeshNormalMaterial()
-            );
-            boundary.position.y = -100;
-            boundary.rotation.x = -Math.PI/2;
-            base.add(boundary);
-            not_allowed.push(boundary);
-
-            base.add(leaves);
-            base.position.set(x, 60, z);
-
-            scene.add(base);
-        }
     </script>
 </body>
 </html>
